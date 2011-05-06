@@ -1,7 +1,7 @@
 package collections
 
 import (
-	"fmt"
+	//"fmt"
 	"testing"
 )
 
