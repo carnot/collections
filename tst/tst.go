@@ -5,30 +5,32 @@ import (
 )
 
 type (
+	Any interface{}
+	
 	node struct {
 		key byte
 		value Any
 		left, middle, right *node
 	}
-	iterator struct {
+	nodei struct {
 		step int
 		node *node
-		prev *iterator
+		prev *nodei
 	}
-	TernaryTree struct {
+	TernarySearchTree struct {
 		length int
 		root *node
 	}	
 )
 
 // Create a new ternary search tree
-func NewTernaryTree() *TernaryTree {
-	tree := &TernaryTree{}
+func New() *TernarySearchTree {
+	tree := &TernarySearchTree{}
 	tree.Init()
 	return tree
 }
 // Get the value at the specified key. Returns nil if not found.
-func (this *TernaryTree) Get(key string) Any {
+func (this *TernarySearchTree) Get(key string) Any {
 	if this.length == 0 {
 		return nil
 	}
@@ -62,16 +64,16 @@ func (this *TernaryTree) Get(key string) Any {
 	return node.value
 }
 // Test to see whether or not the given key is contained in the tree.
-func (this *TernaryTree) Has(key string) bool {
+func (this *TernarySearchTree) Has(key string) bool {
 	return this.Get(key) != nil
 }
 // Initialize the tree (reset it so that its empty). New will do this for you.
-func (this *TernaryTree) Init() {
+func (this *TernarySearchTree) Init() {
 	this.length = 0
 	this.root = nil
 }
 // Insert a new key value pair into the collection
-func (this *TernaryTree) Insert(key string, value Any) {
+func (this *TernarySearchTree) Insert(key string, value Any) {
 	// If the value is nil then remove this key from the collection
 	if value == nil {
 		this.Remove(key)
@@ -113,18 +115,18 @@ func (this *TernaryTree) Insert(key string, value Any) {
 	t.value = value
 }
 // Iterate over the collection
-func (this *TernaryTree) Do(f func(Any)bool) {
+func (this *TernarySearchTree) Do(f func(Any)bool) {
 	if this.Len() == 0 {
 		return
 	}
-	i := &iterator{0,this.root,nil}
+	i := &nodei{0,this.root,nil}
 	for i != nil {
 		switch i.step {
 		// Left
 		case 0:
 			i.step++
 			if i.node.left != nil {
-				i = &iterator{0,i.node.left,i}
+				i = &nodei{0,i.node.left,i}
 				continue
 			}
 		// Value
@@ -140,14 +142,14 @@ func (this *TernaryTree) Do(f func(Any)bool) {
 		case 2:
 			i.step++
 			if i.node.middle != nil {
-				i = &iterator{0,i.node.middle,i}
+				i = &nodei{0,i.node.middle,i}
 				continue
 			}
 		// Right
 		case 3:
 			i.step++
 			if i.node.right != nil {
-				i = &iterator{0,i.node.right,i}
+				i = &nodei{0,i.node.right,i}
 				continue
 			}
 		// Backtrack
@@ -156,31 +158,7 @@ func (this *TernaryTree) Do(f func(Any)bool) {
 		}
 	}
 }
-// Dump the tree to a string for easier debuggin
-func (this *node) String() string {
-	str := "{" + string(this.key)
-	if this.value != nil {
-		str += ":" + fmt.Sprint(this.value)
-	}
-	if this.left != nil {
-		str += this.left.String()
-	} else {
-		str += " "
-	}
-	if this.middle != nil {
-		str += this.middle.String()
-	} else {
-		str += " "
-	}
-	if this.right != nil {
-		str += this.right.String()
-	} else {
-		str += " "
-	}
-	str += "}"
-	return str
-}
-func (this *TernaryTree) String() string {
+func (this *TernarySearchTree) String() string {
 	if this.length == 0 {
 		return "{}"
 	}
@@ -188,11 +166,11 @@ func (this *TernaryTree) String() string {
 	return this.root.String()
 }
 // Get the number of items stored in the tree
-func (this *TernaryTree) Len() int {
+func (this *TernarySearchTree) Len() int {
 	return this.length
 }
 // Remove a key from the collection
-func (this *TernaryTree) Remove(key string) Any {
+func (this *TernarySearchTree) Remove(key string) Any {
 	if this.length == 0 {
 		return nil
 	}
@@ -256,4 +234,28 @@ func (this *TernaryTree) Remove(key string) Any {
 	}
 	this.length--
 	return t.value
+}
+// Dump the tree to a string for easier debuggin
+func (this *node) String() string {
+	str := "{" + string(this.key)
+	if this.value != nil {
+		str += ":" + fmt.Sprint(this.value)
+	}
+	if this.left != nil {
+		str += this.left.String()
+	} else {
+		str += " "
+	}
+	if this.middle != nil {
+		str += this.middle.String()
+	} else {
+		str += " "
+	}
+	if this.right != nil {
+		str += this.right.String()
+	} else {
+		str += " "
+	}
+	str += "}"
+	return str
 }

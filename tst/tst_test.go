@@ -6,7 +6,7 @@ import (
 )
 
 func TestCases(t *testing.T) {
-	tree := NewTernaryTree()
+	tree := New()
 	tree.Insert("test", 1)
 	if tree.Len() != 1 {
 		t.Errorf("expecting len 1")
