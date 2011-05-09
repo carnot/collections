@@ -1,182 +1,31 @@
-package collections
+package splay
 
 import (
 	"fmt"
 )
 
 type (
-	splayNode struct {
+	Any interface{}
+	
+	node struct {
 		key Any
 		value Any
-		parent, left, right *splayNode
+		parent, left, right *node
 	}
-	splayNodeIterator struct {
+	nodei struct {
 		step int
-		node *splayNode
-		prev *splayNodeIterator
+		node *node
+		prev *nodei
 	}
 	
 	SplayTree struct {
 		length int
-		root *splayNode
+		root *node
 		less func(Any,Any)bool
 	}
 )
 
-func (this *splayNode) rotateLeft() {
-	parent := this.parent
-	pivot := this.right
-	child := pivot.left
-	
-	if pivot == nil {
-		return
-	}
-	
-	// Update the parent
-	if parent != nil {
-		if parent.left == this {
-			parent.left = pivot
-		} else {
-			parent.right = pivot
-		}
-	}
-	
-	// Update the pivot
-	pivot.parent = parent
-	pivot.left = this
-	
-	// Update the child
-	if child != nil {
-		child.parent = this
-	}
-	
-	// Update this
-	this.parent = pivot
-	this.right = child
-}
-func (this *splayNode) rotateRight() {
-	parent := this.parent
-	pivot := this.left
-	child := pivot.right
-	
-	if pivot == nil {
-		return
-	}
-	
-	// Update the parent
-	if parent != nil {
-		if parent.left == this {
-			parent.left = pivot
-		} else {
-			parent.right = pivot
-		}
-	}
-	
-	// Update the pivot
-	pivot.parent = parent
-	pivot.right = this
-	
-	if child != nil {
-		child.parent = this
-	}
-	
-	// Update this
-	this.parent = pivot
-	this.left = child	
-}
-
-func (this *SplayTree) splay(node *splayNode) {
-	// Already root, nothing to do
-	if node.parent == nil {
-		this.root = node
-		return
-	}
-	
-	p := node.parent
-	g := p.parent
-	
-	// Zig
-	if p == this.root {
-		if node == p.left {
-			p.rotateRight()
-		} else {
-			p.rotateLeft()
-		}
-	} else {		
-		// Zig-zig
-		if node == p.left && p == g.left {
-			g.rotateRight()
-			p.rotateRight()
-		} else if node == p.right && p == g.right {
-			g.rotateLeft()
-			p.rotateLeft()
-		// Zig-zag
-		} else if node == p.right && p == g.left {
-			p.rotateLeft()
-			g.rotateRight()
-		} else if node == p.left && p == g.right {
-			p.rotateRight()
-			g.rotateLeft()
-		}
-	}
-	this.splay(node)
-}
-// Swap two nodes in the tree
-func (this *SplayTree) swap(n1, n2 *splayNode) {
-	p1 := n1.parent
-	l1 := n1.left
-	r1 := n1.right
-	
-	p2 := n2.parent
-	l2 := n2.left
-	r2 := n2.right
-	
-	// Update node links
-	n1.parent = p2
-	n1.left = l2
-	n1.right = r2
-	
-	n2.parent = p1
-	n2.left = l1
-	n2.right = r1
-	
-	// Update parent links
-	if p1 != nil {
-		if p1.left == n1 {
-			p1.left = n2
-		} else {
-			p1.right = n2
-		}
-	}	
-	if p2 != nil {
-		if p2.left == n2 {
-			p2.left = n1
-		} else {
-			p2.right = n1
-		}
-	}
-	
-	if n1 == this.root {
-		this.root = n2
-	} else if n2 == this.root {
-		this.root = n1
-	}
-}
-
-func (this *splayNode) String() string {
-	str := "{" + fmt.Sprint(this.key) + ":" + fmt.Sprint(this.value) + "|"
-	if this.left != nil {
-		str += this.left.String()
-	}
-	str += "|"
-	if this.right != nil {
-		str += this.right.String()
-	}
-	str += "}"
-	return str
-}
-
-func NewSplayTree(less func(Any,Any)bool) *SplayTree {
+func New(less func(Any,Any)bool) *SplayTree {
 	return &SplayTree{0,nil,less}
 }
 func (this *SplayTree) Get(key Any) Any {
@@ -210,45 +59,45 @@ func (this *SplayTree) Init() {
 }
 func (this *SplayTree) Insert(key Any, value Any) {
 	if this.length == 0 {
-		this.root = &splayNode{key,value,nil,nil,nil}
+		this.root = &node{key,value,nil,nil,nil}
 		this.length = 1
 		return
 	}
 	
-	node := this.root
+	n := this.root
 	for {
-		if this.less(key, node.key) {
-			if node.left == nil {
-				node.left = &splayNode{key,value,node,nil,nil}
+		if this.less(key, n.key) {
+			if n.left == nil {
+				n.left = &node{key,value,n,nil,nil}
 				this.length++
-				node = node.left
+				n = n.left
 				break
 			}
-			node = node.left
+			n = n.left
 			continue
 		}
 		
-		if this.less(node.key, key) {
-			if node.right == nil {
-				node.right = &splayNode{key,value,node,nil,nil}
+		if this.less(n.key, key) {
+			if n.right == nil {
+				n.right = &node{key,value,n,nil,nil}
 				this.length++
-				node = node.right
+				n = n.right
 				break
 			}
-			node = node.right
+			n = n.right
 			continue
 		}
 		
-		node.value = value
+		n.value = value
 		break
 	}
-	this.splay(node)
+	this.splay(n)
 }
 func (this *SplayTree) PreOrder(f func(Any,Any)bool) {
 	if this.length == 1 {
 		return
 	}
-	i := &splayNodeIterator{0,this.root,nil}
+	i := &nodei{0,this.root,nil}
 	for i != nil {
 		switch i.step {
 		// Value
@@ -261,13 +110,13 @@ func (this *SplayTree) PreOrder(f func(Any,Any)bool) {
 		case 1:
 			i.step++
 			if i.node.left != nil {
-				i = &splayNodeIterator{0,i.node.left,i}
+				i = &nodei{0,i.node.left,i}
 			}
 		// Right
 		case 2:
 			i.step++
 			if i.node.right != nil {
-				i = &splayNodeIterator{0,i.node.right,i}
+				i = &nodei{0,i.node.right,i}
 			}
 		default:
 			i = i.prev
@@ -278,14 +127,14 @@ func (this *SplayTree) InOrder(f func(Any,Any)bool) {
 	if this.length == 1 {
 		return
 	}
-	i := &splayNodeIterator{0,this.root,nil}
+	i := &nodei{0,this.root,nil}
 	for i != nil {
 		switch i.step {
 		// Left
 		case 0:
 			i.step++
 			if i.node.left != nil {
-				i = &splayNodeIterator{0,i.node.left,i}
+				i = &nodei{0,i.node.left,i}
 			}
 		// Value
 		case 1:
@@ -297,7 +146,7 @@ func (this *SplayTree) InOrder(f func(Any,Any)bool) {
 		case 2:
 			i.step++
 			if i.node.right != nil {
-				i = &splayNodeIterator{0,i.node.right,i}
+				i = &nodei{0,i.node.right,i}
 			}
 		default:
 			i = i.prev
@@ -308,20 +157,20 @@ func (this *SplayTree) PostOrder(f func(Any,Any)bool) {
 	if this.length == 1 {
 		return
 	}
-	i := &splayNodeIterator{0,this.root,nil}
+	i := &nodei{0,this.root,nil}
 	for i != nil {
 		switch i.step {
 		// Left
 		case 0:
 			i.step++
 			if i.node.left != nil {
-				i = &splayNodeIterator{0,i.node.left,i}
+				i = &nodei{0,i.node.left,i}
 			}
 		// Right
 		case 1:
 			i.step++
 			if i.node.right != nil {
-				i = &splayNodeIterator{0,i.node.right,i}
+				i = &nodei{0,i.node.right,i}
 			}
 		// Value
 		case 2:
@@ -451,4 +300,156 @@ func (this *SplayTree) String() string {
 		return "{}"
 	}
 	return this.root.String()
+}
+// Splay a node in the tree (send it to the top)
+func (this *SplayTree) splay(node *node) {
+	// Already root, nothing to do
+	if node.parent == nil {
+		this.root = node
+		return
+	}
+	
+	p := node.parent
+	g := p.parent
+	
+	// Zig
+	if p == this.root {
+		if node == p.left {
+			p.rotateRight()
+		} else {
+			p.rotateLeft()
+		}
+	} else {		
+		// Zig-zig
+		if node == p.left && p == g.left {
+			g.rotateRight()
+			p.rotateRight()
+		} else if node == p.right && p == g.right {
+			g.rotateLeft()
+			p.rotateLeft()
+		// Zig-zag
+		} else if node == p.right && p == g.left {
+			p.rotateLeft()
+			g.rotateRight()
+		} else if node == p.left && p == g.right {
+			p.rotateRight()
+			g.rotateLeft()
+		}
+	}
+	this.splay(node)
+}
+// Swap two nodes in the tree
+func (this *SplayTree) swap(n1, n2 *node) {
+	p1 := n1.parent
+	l1 := n1.left
+	r1 := n1.right
+	
+	p2 := n2.parent
+	l2 := n2.left
+	r2 := n2.right
+	
+	// Update node links
+	n1.parent = p2
+	n1.left = l2
+	n1.right = r2
+	
+	n2.parent = p1
+	n2.left = l1
+	n2.right = r1
+	
+	// Update parent links
+	if p1 != nil {
+		if p1.left == n1 {
+			p1.left = n2
+		} else {
+			p1.right = n2
+		}
+	}	
+	if p2 != nil {
+		if p2.left == n2 {
+			p2.left = n1
+		} else {
+			p2.right = n1
+		}
+	}
+	
+	if n1 == this.root {
+		this.root = n2
+	} else if n2 == this.root {
+		this.root = n1
+	}
+}
+// Node methods
+func (this *node) String() string {
+	str := "{" + fmt.Sprint(this.key) + ":" + fmt.Sprint(this.value) + "|"
+	if this.left != nil {
+		str += this.left.String()
+	}
+	str += "|"
+	if this.right != nil {
+		str += this.right.String()
+	}
+	str += "}"
+	return str
+}
+func (this *node) rotateLeft() {
+	parent := this.parent
+	pivot := this.right
+	child := pivot.left
+	
+	if pivot == nil {
+		return
+	}
+	
+	// Update the parent
+	if parent != nil {
+		if parent.left == this {
+			parent.left = pivot
+		} else {
+			parent.right = pivot
+		}
+	}
+	
+	// Update the pivot
+	pivot.parent = parent
+	pivot.left = this
+	
+	// Update the child
+	if child != nil {
+		child.parent = this
+	}
+	
+	// Update this
+	this.parent = pivot
+	this.right = child
+}
+func (this *node) rotateRight() {
+	parent := this.parent
+	pivot := this.left
+	child := pivot.right
+	
+	if pivot == nil {
+		return
+	}
+	
+	// Update the parent
+	if parent != nil {
+		if parent.left == this {
+			parent.left = pivot
+		} else {
+			parent.right = pivot
+		}
+	}
+	
+	// Update the pivot
+	pivot.parent = parent
+	pivot.right = this
+	
+	if child != nil {
+		child.parent = this
+	}
+	
+	// Update this
+	this.parent = pivot
+	this.left = child	
 }

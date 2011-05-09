@@ -1,4 +1,4 @@
-package collections
+package tst
 
 import (
 	"fmt"
