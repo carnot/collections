@@ -63,6 +63,46 @@ func (this *TernarySearchTree) Get(key string) Any {
 	}
 	return node.value
 }
+func (this *TernarySearchTree) GetLongestPrefix(prefix string) Any {
+	if this.length == 0 {
+		return nil
+	}
+	
+	n := this.root
+	v := n.value
+	bs := []byte(prefix)
+	for i := 0; i < len(bs); {
+		b := bs[i]
+		if n.value != nil {
+			v = n.value
+		}
+		if b > n.key {
+			if n.right == nil {
+				break
+			}
+			n = n.right
+		} else if b < n.key {
+			if n.left == nil {
+				break
+			}
+			n = n.left
+		} else {
+			i++
+			if i < len(bs) {
+				if n.middle == nil {
+					break
+				}
+				n = n.middle
+			} else {
+				break
+			}
+		}
+	}
+	if n.value != nil {
+		v = n.value
+	}
+	return v
+}
 // Test to see whether or not the given key is contained in the tree.
 func (this *TernarySearchTree) Has(key string) bool {
 	return this.Get(key) != nil

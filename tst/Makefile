@@ -1,6 +1,6 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=badgerodon/collections/tst
+TARG=github.com/badgerodon/collections/tst
 GOFILES=\
   tst.go\
 
