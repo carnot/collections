@@ -55,7 +55,7 @@ func (this *Set) Intersection(set *Set) *Set {
 func (this *Set) Len() int {
 	return len(this.hash)
 }
-// Test whether or not this set is a subset of "set"
+// Test whether or not this set is a proper subset of "set"
 func (this *Set) ProperSubsetOf(set *Set) bool {
 	return this.SubsetOf(set) && this.Len() < set.Len()
 }

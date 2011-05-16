@@ -1,4 +1,4 @@
-DIRS = pheap pqueue queue splay stack trie tst
+DIRS = queue set splay stack tst
 
 all: install
 
@@ -7,13 +7,13 @@ install.dirs: $(addsuffix .install, $(DIRS))
 test.dirs: $(addsuffix .test, $(DIRS))
 
 %.clean:
-	+cd $* && gomake clean
+	+cd $* && make clean
 
 %.install:
-	+cd $* && gomake install
+	+cd $* && make install
 
 %.test:
-	+cd $* && gomake test
+	+cd $* && make test
 
 clean: clean.dirs
 
